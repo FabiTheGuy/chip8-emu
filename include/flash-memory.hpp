@@ -2,6 +2,9 @@
 
 #include "definitions.hpp"
 
+/* Instructions */
+#define INS_I_TO_ADDR 0xA000 /* (ANNN) - sets I to NNN */
+
 static const byte fonts[0x50] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, /* 0 */
     0x20, 0x60, 0x20, 0x20, 0x70, /* 1 */
