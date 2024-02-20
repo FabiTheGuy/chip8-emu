@@ -42,3 +42,15 @@ void CPU::load_program(byte* program, word program_size) {
     memory[0x200 + index] = program[index];
   }
 }
+
+void CPU::run_cycle(void) {
+  word instruction = fetch() << 8 | fetch();
+
+  switch (instruction & 0xF000) {
+    case INS_I_TO_ADDR:
+      reg_index = instruction & 0x0FFF;
+      break;
+    default:
+      fprintf(stderr, "Instruction: %04x was not found!", instruction);
+  }
+}

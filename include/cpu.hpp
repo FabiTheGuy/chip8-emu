@@ -21,4 +21,5 @@ class CPU {
  public:
   void reset(void);
   void load_program(byte* program, word program_size);
+  void run_cycle(void);
 };
