@@ -1,10 +1,16 @@
 #include "../include/cpu.hpp"
+#include "../include/flash-memory.hpp"
 
 #include <cstring>
 
 void CPU::reset(void) {
   /* Clears the memory */
   std::memset(memory, 0, 0x1000);
+
+  /* Loads fonts into memory (0x050-0x09F)*/
+  for (byte index = 0; index < 0x50; index++) {
+    memory[0x50 + index] = fonts[index];
+  }
 
   /* Clears the screen buffer */
   for (byte index = 0; index < 0x20; index++) {
