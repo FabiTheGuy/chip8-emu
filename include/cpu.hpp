@@ -16,8 +16,9 @@ class CPU {
   byte draw_flag;
 
  private:
-  byte fetch_program_code(void);
+  byte fetch(void);
 
  public:
   void reset(void);
+  void load_program(byte* program, word program_size);
 };

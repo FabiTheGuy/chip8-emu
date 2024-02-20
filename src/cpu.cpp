@@ -1,7 +1,9 @@
 #include "../include/cpu.hpp"
-#include "../include/flash-memory.hpp"
 
+#include <cstdio>
 #include <cstring>
+
+#include "../include/flash-memory.hpp"
 
 void CPU::reset(void) {
   /* Clears the memory */
@@ -34,3 +36,9 @@ void CPU::reset(void) {
 }
 
 byte CPU::fetch(void) { return memory[0x200 + program_counter++]; }
+
+void CPU::load_program(byte* program, word program_size) {
+  for (word index = 0; index < program_size; index++) {
+    memory[0x200 + index] = program[index];
+  }
+}
