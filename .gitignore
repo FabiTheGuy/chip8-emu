@@ -1,2 +1,3 @@
+.vscode
 build/chip8emu
 build/chip8emu-debug
