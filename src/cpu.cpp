@@ -26,3 +26,5 @@ void CPU::reset(void) {
   /* Clears miscs */
   draw_flag = 0;
 }
+
+byte CPU::fetch(void) { return memory[0x200 + program_counter++]; }

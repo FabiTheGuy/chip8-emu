@@ -15,6 +15,9 @@ class CPU {
   byte sound_timer;
   byte draw_flag;
 
+ private:
+  byte fetch_program_code(void);
+
  public:
   void reset(void);
 };
