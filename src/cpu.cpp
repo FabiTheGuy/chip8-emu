@@ -1,0 +1,28 @@
+#include "../include/cpu.hpp"
+
+#include <cstring>
+
+void CPU::reset(void) {
+  /* Clears the memory */
+  std::memset(memory, 0, 0x1000);
+
+  /* Clears the screen buffer */
+  for (byte index = 0; index < 0x20; index++) {
+    memset(scr_buff[index], 0, 0x40);
+  }
+
+  /* Clears the v-registers */
+  std::memset(reg_v, 0, 0x10);
+
+  /* Clears the stack */
+  std::memset(stack, 0, 0x10);
+
+  /* Clears the index register/program counter/stack pointer */
+  reg_index = program_counter = stack_pointer = 0;
+
+  /* Clears timers */
+  delay_timer = sound_timer = 0;
+
+  /* Clears miscs */
+  draw_flag = 0;
+}
