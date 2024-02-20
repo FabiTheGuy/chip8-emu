@@ -25,5 +25,8 @@ clean:
 run: $(TARGET)
 	./$(BUILD_DIR)/$(TARGET)
 
+debug: $(SOURCES)
+	$(COMPILE) -g -o $(BUILD_DIR)/$(TARGET)-debug $^
+
 $(TARGET): $(SOURCES)
 	$(COMPILE) -o $(BUILD_DIR)/$@ $^
