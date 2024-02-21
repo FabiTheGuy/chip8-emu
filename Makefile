@@ -1,6 +1,6 @@
 # Compiler related
 CXX = clang++
-CXX_FLAGS = -std=c++17 -Wall -Wpedantic -fsanitize=address -I../include
+CXX_FLAGS = -std=c++17 -Wall -Wpedantic -I../include
 COMPILE = $(CXX) $(CXX_FLAGS)
 
 # Formatter related
