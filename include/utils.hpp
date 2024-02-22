@@ -1,6 +1,5 @@
 #pragma once
 
-
 /**
  * @brief Generates a number from min to max
  * @param min smallest number
