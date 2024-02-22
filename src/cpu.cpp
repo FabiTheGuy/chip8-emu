@@ -47,8 +47,8 @@ void CPU::load_program(byte* program, word program_size) {
 
 void CPU::run_cycle(void) {
   word inst = fetch() << 8 | fetch(); /* Fetches 2 Bytes merged together */
-  byte x_index = inst & 0x0F00; /* Determines Bit 8-11 (in some cases x-Address) */
-  byte y_index = inst & 0x00F0; /* Determines Bit 4-7 (in some cases y-Address) */
+  byte x_index = (inst & 0x0F00) >> 8; /* Determines Bit 8-11 (in some cases x-Address) */
+  byte y_index = (inst & 0x00F0) >> 4; /* Determines Bit 4-7 (in some cases y-Address) */
   bool inst_used = false;
 
 
@@ -140,7 +140,7 @@ void CPU::run_cycle(void) {
       case INS_ADD_VX_VY : {
           word result = reg_v[x_index] + reg_v[y_index];
           reg_v[0x0F] = result > 0xFF;
-          reg_v[x_index] = result >> 8;
+          reg_v[x_index] = result & 0x00FF;
           USED_AND_BREAK
       }
       case INS_SUB_VX_VY : {
