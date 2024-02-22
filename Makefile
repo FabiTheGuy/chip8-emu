@@ -1,6 +1,6 @@
 # Compiler related
 CXX = clang++
-CXX_FLAGS = -std=c++17 -Wall -Wpedantic -fsanitize=address -I../include
+CXX_FLAGS = -std=c++17 -Wall -Wpedantic -I../include
 COMPILE = $(CXX) $(CXX_FLAGS)
 
 # Formatter related
@@ -24,6 +24,9 @@ clean:
 
 run: $(TARGET)
 	./$(BUILD_DIR)/$(TARGET)
+
+debug: $(SOURCES)
+	$(COMPILE) -g -o $(BUILD_DIR)/$(TARGET)-debug $^
 
 $(TARGET): $(SOURCES)
 	$(COMPILE) -o $(BUILD_DIR)/$@ $^
