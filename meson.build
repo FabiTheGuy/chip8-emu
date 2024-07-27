@@ -3,5 +3,5 @@ project('chip8-emu', 'c',
   default_options : ['warning_level=3'])
 
 exec = executable('chip8-emu',
-  sources: ['src/main.c'],
+  sources: ['src/main.c', 'src/cpu.c'],
   include_directories: ['include'])
