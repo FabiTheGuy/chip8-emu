@@ -32,3 +32,7 @@ void reset_cpu(CPU* cpu) {
 void destroy_cpu(CPU* cpu) {
     free(cpu);
 }
+
+void cpu_load_program(CPU* cpu, byte* data, size_t data_size) {
+    memcpy(cpu->_memory[0x200], data, data_size);
+}

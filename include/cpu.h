@@ -1,6 +1,7 @@
 #ifndef CHIP_8_CPU_H
 #define CHIP_8_CPU_H
 
+#include <stddef.h>
 #include "type.h"
 
 #define MEMORY_SIZE 4096       /* Total Memory Size (4KB) */
@@ -58,5 +59,20 @@ void reset_cpu(CPU* cpu);
  * @param cpu A pointer to the CPU instance to destroy.
  */
 void destroy_cpu(CPU* cpu);
+
+/**
+ * @brief Loads a program into the CPU's memory.
+ * 
+ * This function takes a data array representing a program and loads it into
+ * the CPU's memory starting at a 0x200
+ * 
+ * @param cpu A pointer to the CPU instance where the program will be loaded.
+ * @param data A pointer to the array of bytes representing the program data.
+ * @param data_size The size of the program data in bytes.
+ * 
+ * @note The function ensures that the program fits within the available memory 
+ * space.
+ */
+void cpu_load_program(CPU* cpu, byte* data, size_t data_size);
 
 #endif /* CHIP_8_CPU_H */
