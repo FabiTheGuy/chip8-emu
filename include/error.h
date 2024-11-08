@@ -17,7 +17,7 @@ struct _Result {
     void* data;                 /* Pointer to the result data */
     ResultCode code;            /* Status code of the result */
 };
-typedef struct Result Result;
+typedef struct _Result Result;
 
 /**
  * Converts a `ResultCode` to its corresponding string representation.
