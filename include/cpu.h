@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include "type.h"
+#include "error.h"
 
 #define MEMORY_SIZE 4096       /* Total Memory Size (4KB) */
 #define VIDEO_MEMORY_WIDTH 64  /* Video Memory Width (virtual screen width) */
@@ -35,9 +36,11 @@ typedef struct _CPU CPU;
  * to its default state by calling `reset_cpu`. If memory allocation fails,
  * the function returns NULL.
  * 
- * @return CPU* - A pointer to the newly created CPU instance, NULL if the allocation fails
+ * @return Result - A `Result` struct containing:
+ *         - `data`: A pointer to the newly created CPU instance if successful, or `NULL` if the allocation fails.
+ *         - `code`: A `ResultCode` indicating the status of the operation (e.g., `OK` for success, `ERROR_UNABLE_TO_ALLOCATE` for allocation failure).
  */
-CPU* create_cpu();
+Result create_cpu();
 
 /**
  * @brief Resets a given CPU instance to its initial state.
@@ -70,9 +73,10 @@ void destroy_cpu(CPU* cpu);
  * @param data A pointer to the array of bytes representing the program data.
  * @param data_size The size of the program data in bytes.
  * 
- * @note The function ensures that the program fits within the available memory 
- * space.
+ * @return Result - A `Result` struct containing:
+ *         - `data`: A pointer which is constantly `NULL` (can be ignored!)
+ *         - `code`: A `ResultCode` indicating the status of the operation (e.g., `OK` for sucess, `ERROR_DATA_IS_TOO_LARGE` if provided data is too large)
  */
-void cpu_load_program(CPU* cpu, byte* data, size_t data_size);
+Result cpu_load_program(CPU* cpu, byte* data, size_t data_size);
 
 #endif /* CHIP_8_CPU_H */

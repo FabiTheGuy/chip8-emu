@@ -8,7 +8,7 @@ project(
   ]
 )
 
-sources = files('src/main.c')
+sources = files('src/main.c', 'src/cpu.c', 'src/error.c')
 headers = include_directories('include')
 
 exe = executable(

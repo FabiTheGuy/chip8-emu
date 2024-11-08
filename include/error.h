@@ -7,6 +7,7 @@
 enum _ResultCode {
     OK,                         /* Operation was successful */
     ERROR_UNABLE_TO_ALLOCATE,   /* Operation failed, because memory cannot be allocated */
+    ERROR_DATA_IS_TOO_LARGE,    /* Operation failed, because provided Data is too large */
 };
 typedef enum _ResultCode ResultCode;
 

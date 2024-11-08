@@ -3,16 +3,19 @@
 
 #include "../include/cpu.h"
 
+Result create_cpu() {
+    Result res;
+    res.data = (CPU*) malloc(sizeof(CPU));
 
-CPU* create_cpu() {
-    CPU* cpu = (CPU*) malloc(sizeof(CPU));
+    if (res.data == NULL) {
+        res.code = ERROR_UNABLE_TO_ALLOCATE;
+        return res;
+    }
+    
+    reset_cpu(res.data);
 
-    if (cpu == NULL)
-        return NULL;
-
-    reset_cpu(cpu);
-
-    return cpu;
+    res.code = OK;
+    return res;
 }
 
 void reset_cpu(CPU* cpu) {
@@ -33,6 +36,15 @@ void destroy_cpu(CPU* cpu) {
     free(cpu);
 }
 
-void cpu_load_program(CPU* cpu, byte* data, size_t data_size) {
-    memcpy(cpu->_memory[0x200], data, data_size);
+Result cpu_load_program(CPU* cpu, byte* data, size_t data_size) {
+    Result res = { .data = NULL };
+    if (data_size > 0xe000) {
+        res.code = ERROR_DATA_IS_TOO_LARGE;
+        return res;
+    }
+
+    memcpy(&(cpu->_memory[0x200]), data, data_size);
+
+    res.code = OK;
+    return res;
 }
