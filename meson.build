@@ -5,7 +5,9 @@ project('chip8-emu', 'cpp',
 
 
 sources = files(
-        'src/types.hpp'
+        'src/types.hpp',
+        'src/ram.hpp',
+        'src/ram.cpp',
 )
 
 chip8_exec = executable(
