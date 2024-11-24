@@ -8,6 +8,7 @@ sources = files(
         'src/types.hpp',
         'src/ram.hpp',
         'src/ram.cpp',
+        'src/rom.hpp'
 )
 
 chip8_exec = executable(
