@@ -1,10 +1,16 @@
 #include <cstring>
 #include <stdexcept>
 #include "ram.hpp"
+#include "rom.hpp"
 
 
 void RAM::reset() {
+    /* Sets every byte in memory to 0 */
     std::memset(this->memory, 0, sizeof(this->memory));
+    /* Copies the sprites into memory */
+    std::memcpy(this->memory, rom::sprites, sizeof(rom::sprites));
+
+    /* Sets every byte in video memory to 0 */
     for (auto & i : this->video_memory) {
         std::memset(i, 0, sizeof(i));
     }
