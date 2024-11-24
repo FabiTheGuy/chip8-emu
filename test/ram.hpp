@@ -1,6 +1,7 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <stdexcept>
 #include "src/ram.hpp"
 #include "src/rom.hpp"
 
@@ -65,4 +66,26 @@ TEST(RAMTest, Reset) {
 
     ASSERT_EQ(512, ram.program_counter);
     ASSERT_EQ(false, ram.should_draw);
+}
+
+TEST(RAMTest, LoadProgramSucceeded) {
+    RAM ram;
+    constexpr byte program[0x0DFF] { 1 };
+
+    ASSERT_NO_THROW(ram.load_program(program, sizeof(program)));
+}
+
+TEST(RAMTest, LoadProgramFailed) {
+    RAM ram;
+    constexpr byte program[0x0E00] { 1 };
+
+    ASSERT_THROW(ram.load_program(program, sizeof(program)), std::runtime_error);
+}
+
+TEST(RAMTest, FetchInstruction) {
+    RAM ram;
+    constexpr byte program[] = { 0x55, 0xFF };
+
+    ASSERT_NO_THROW(ram.load_program(program, sizeof(program)));
+    ASSERT_EQ(ram.fetch_instruction(), 0x55FF);
 }
