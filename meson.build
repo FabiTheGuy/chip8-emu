@@ -25,7 +25,8 @@ chip8_lib = library(
 
 gtest_dep = subproject('gtest').get_variable('gtest_dep')
 test_sources = files(
-        'test/main.cpp'
+        'test/main.cpp',
+        'test/ram.hpp'
 )
 
 chip8_test_exec = executable(
