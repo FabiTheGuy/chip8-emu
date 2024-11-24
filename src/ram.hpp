@@ -10,6 +10,6 @@ struct RAM {
     bool should_draw = false;
 
     void reset();
-    void load_program(byte* program, size_t program_size);
+    void load_program(const byte* program, size_t program_size);
     word fetch_instruction();
 };
