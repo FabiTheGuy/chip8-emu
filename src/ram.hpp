@@ -6,6 +6,7 @@
 struct RAM {
     byte memory[4096] {};
     byte video_memory[32][64] {};
+    word program_counter = 512;
     bool should_draw = false;
 
     void reset();

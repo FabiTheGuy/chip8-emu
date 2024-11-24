@@ -7,5 +7,7 @@ void RAM::reset() {
     for (auto & i : this->video_memory) {
         std::memset(i, 0, sizeof(i));
     }
+
+    this->program_counter = 512;
     this->should_draw = false;
 }
