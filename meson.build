@@ -4,7 +4,9 @@ project('chip8-emu', 'cpp',
 )
 
 
-sources = files()
+sources = files(
+        'src/types.hpp'
+)
 
 chip8_exec = executable(
         'chip8_emu',
@@ -19,7 +21,9 @@ chip8_lib = library(
 
 
 gtest_dep = subproject('gtest').get_variable('gtest_dep')
-test_sources = files('')
+test_sources = files(
+        'test/main.cpp'
+)
 
 chip8_test_exec = executable(
         'chip8_emu_test',
