@@ -4,6 +4,10 @@
 #include "rom.hpp"
 
 
+RAM::RAM() {
+    this->reset();
+}
+
 void RAM::reset() {
     /* Sets every byte in memory to 0 */
     std::memset(this->memory, 0, sizeof(this->memory));
