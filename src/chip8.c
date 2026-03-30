@@ -64,7 +64,6 @@ Chip8Opcode chip8_decode(word opcode) {
             {
                 case 0x00E0: return OP_CLS;
                 case 0x00EE: return OP_RET;
-                default:     return OP_SYS;
             }
         }
 
@@ -223,9 +222,7 @@ void chip8_execute(Instruction* instruction)
         };
         case OP_ADD_VX_BYTE: 
         {
-            word result = chip8.reg_v[instruction->x] + instruction->kk;
-
-            chip8.reg_v[instruction->x] = (byte) result;
+            chip8.reg_v[instruction->x] += instruction->kk;
 
             break;
         };
@@ -235,31 +232,166 @@ void chip8_execute(Instruction* instruction)
 
             break;
         };
-        case OP_OR: {};
-        case OP_AND: {};
-        case OP_XOR: {};
-        case OP_ADD: {};
-        case OP_SUB: {};
-        case OP_SHR: {};
-        case OP_SUBN: {};
-        case OP_SHL: {};
-        case OP_SNE_VX_VY: {};
-        case OP_LD_I: {};
-        case OP_JP_V0: {};
-        case OP_RND: {};
-        case OP_DRW: {};
-        case OP_SKP: {};
-        case OP_SKNP: {};
-        case OP_LD_VX_DT: {};
-        case OP_LD_VX_K: {};
-        case OP_LD_DT_VX: {};
-        case OP_LD_ST_VX: {};
-        case OP_ADD_I_VX: {};
-        case OP_LD_F_VX: {};
-        case OP_LD_B_VX: {};
-        case OP_LD_I_VX: {};
-        case OP_LD_VX_I: {};
-        case OP_UNKNOWN: {};
+        case OP_OR: 
+        {
+            chip8.reg_v[instruction->x] |= chip8.reg_v[instruction->y];
+
+            break;
+        };
+        case OP_AND: 
+        {
+            chip8.reg_v[instruction->x] &= chip8.reg_v[instruction->y];
+            
+            break;
+        };
+        case OP_XOR: 
+        {
+            chip8.reg_v[instruction->x] ^= chip8.reg_v[instruction->y];
+
+            break;
+        };
+        case OP_ADD: 
+        {
+            word result = chip8.reg_v[instruction->x] + chip8.reg_v[instruction->y];
+
+            chip8.reg_v[CHIP8_REG_V_SIZE - 1] = 1;
+            chip8.reg_v[instruction->x] = (byte) result;
+
+            break;
+        };
+        case OP_SUB: 
+        {
+            if (chip8.reg_v[instruction->x] > chip8.reg_v[instruction->y])
+            {
+                chip8.reg_v[CHIP8_REG_V_SIZE - 1] = 1;
+            }
+
+            chip8.reg_v[instruction->x] -= chip8.reg_v[instruction->y];
+
+            break;
+        };
+        case OP_SHR: 
+        {
+            if (chip8.reg_v[instruction->x] % 2)
+            {
+                chip8.reg_v[CHIP8_REG_V_SIZE - 1] = 1;
+            }
+
+            chip8.reg_v[instruction->x] /= 2;
+
+            break;
+        };
+        case OP_SUBN: 
+        {
+            if (chip8.reg_v[instruction->y] > chip8.reg_v[instruction->x])
+            {
+                chip8.reg_v[CHIP8_REG_V_SIZE - 1] = 1;
+            }
+
+            chip8.reg_v[instruction->x] = chip8.reg_v[instruction->y] - chip8.reg_v[instruction->x];
+
+            break;
+        };
+        case OP_SHL: 
+        {
+            if (chip8.reg_v[instruction->x] & 0x80) 
+            {
+                chip8.reg_v[CHIP8_REG_V_SIZE - 1] = 1;
+            }
+
+            chip8.reg_v[instruction->x] *= 2;
+
+            break;
+        };
+        case OP_SNE_VX_VY: 
+        {
+            if (chip8.reg_v[instruction->x] != chip8.reg_v[instruction->y])
+            {
+                chip8.reg_pc += 2;
+            }
+
+            break;
+        };
+        case OP_LD_I: 
+        {
+            chip8.reg_i = instruction->nnn;
+
+            break;
+        };
+        case OP_JP_V0: 
+        {
+            // TODO: might check if new addr is in range
+            chip8.reg_pc = instruction->nnn + chip8.reg_v[0];
+
+            break;
+        };
+        case OP_RND: 
+        {
+            // TODO:
+            break;
+        };
+        case OP_DRW: 
+        {
+            // TODO: need V-RAM
+            break;
+        };
+        case OP_SKP: 
+        {
+            // TODO: need keypad
+            break;
+        };
+        case OP_SKNP: 
+        {
+            // TODO: need keypad
+            break;
+        };
+        case OP_LD_VX_DT: 
+        {
+            chip8.reg_v[instruction->x] = chip8.reg_delay;
+
+            break;
+        };
+        case OP_LD_VX_K: 
+        {
+            // TODO: need keypad
+            break;
+        };
+        case OP_LD_DT_VX: 
+        {
+            chip8.reg_delay = chip8.reg_v[instruction->x];
+
+            break;
+        };
+        case OP_LD_ST_VX: 
+        {
+            chip8.reg_sound = chip8.reg_v[instruction->x];
+
+            break;
+        };
+        case OP_ADD_I_VX: 
+        {
+            chip8.reg_i += chip8.reg_v[instruction->x];
+        };
+        case OP_LD_F_VX: 
+        {
+            // TODO: need sprites
+        };
+        case OP_LD_B_VX: 
+        {
+            
+        };
+        case OP_LD_I_VX: 
+        {
+            // TODO: check if I is in range when trying to copy
+        };
+        case OP_LD_VX_I: 
+        {
+            // TODO: check if I is in range when trying to read
+        };
+        case OP_UNKNOWN: 
+        {
+            // TODO: add global Error struct
+        };
     }
 }
 
