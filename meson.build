@@ -4,6 +4,8 @@ project('chip8-emu', 'c',
 
 sources = [
   'src/main.c',
+  'src/emulator.h',
+  'src/emulator.c',
 ]
 
 
