@@ -6,7 +6,7 @@
 Chip8 chip8 = { 0 };
 
 
-void emulator_init()
+void chip8_init()
 {
     memset(chip8.mem, 0, sizeof(byte) * CHIP8_MEM_SIZE);
     memset(chip8.reg_v, 0, sizeof(byte) * CHIP8_REG_V_SIZE);
@@ -19,15 +19,128 @@ void emulator_init()
     chip8.reg_sp = 0;
 }
 
-int emulator_load_rom(byte* rom, size_t rom_size)
+int chip8_load_rom(byte* rom, size_t rom_size)
 {
     if (CHIP8_MEM_SIZE - CHIP8_PC_START < rom_size)
     {
         // TODO: might improve calcs
         return 1; 
-    }
+    } 
 
     memcpy(chip8.mem + CHIP8_PC_START, rom, sizeof(byte) * rom_size);
 
     return 0;
+}
+
+word chip8_fetch() 
+{
+    word op1 = chip8.mem[chip8.reg_pc++] << 8;
+    word op2 = chip8.mem[chip8.reg_pc++];
+
+    return op1 | op2;
+}
+
+Instruction chip8_instruction(word opcode)
+{
+    Chip8Opcode op = chip8_decode(opcode);
+
+    return (Instruction) {
+        .opcode = op,
+        .x = 8 >> (opcode & 0x0F00),
+        .y = 4 >> (opcode & 0x00F0),
+        .n = opcode & 0x000F,
+        .kk = opcode & 0x00FF,
+        .nnn = opcode & 0x0FFF,
+    };
+}
+
+Chip8Opcode chip8_decode(word opcode) {
+    switch (opcode & 0xF000) {
+        case 0x0000:
+        {
+            switch (opcode) 
+            {
+                case 0x00E0: return OP_CLS;
+                case 0x00EE: return OP_RET;
+                default:     return OP_SYS;
+            }
+        }
+
+        case 0x1000: return OP_JP;
+        case 0x2000: return OP_CALL;
+        case 0x3000: return OP_SE_VX_BYTE;
+        case 0x4000: return OP_SNE_VX_BYTE;
+
+        case 0x5000:
+        {
+            if ((opcode & 0x000F) == 0x0)
+            {
+                return OP_SE_VX_VY;
+            }
+            return OP_UNKNOWN;
+        }
+
+        case 0x6000: return OP_LD_VX_BYTE;
+        case 0x7000: return OP_ADD_VX_BYTE;
+
+        case 0x8000:
+        {
+            switch (opcode & 0x000F)
+            {
+                case 0x0: return OP_LD_VX_VY;
+                case 0x1: return OP_OR;
+                case 0x2: return OP_AND;
+                case 0x3: return OP_XOR;
+                case 0x4: return OP_ADD;
+                case 0x5: return OP_SUB;
+                case 0x6: return OP_SHR;
+                case 0x7: return OP_SUBN;
+                case 0xE: return OP_SHL;
+                default:  return OP_UNKNOWN;
+            }
+        }
+
+        case 0x9000:
+        {
+            if ((opcode & 0x000F) == 0x0)
+            {
+                return OP_SNE_VX_VY;
+            }
+            return OP_UNKNOWN;
+        }
+
+        case 0xA000: return OP_LD_I;
+        case 0xB000: return OP_JP_V0;
+        case 0xC000: return OP_RND;
+        case 0xD000: return OP_DRW;
+
+        case 0xE000:
+        {
+            switch (opcode & 0x00FF) 
+            {
+                case 0x9E: return OP_SKP;
+                case 0xA1: return OP_SKNP;
+                default:   return OP_UNKNOWN;
+            }
+        }
+
+        case 0xF000:
+        {
+            switch (opcode & 0x00FF) 
+            {
+                case 0x07: return OP_LD_VX_DT;
+                case 0x0A: return OP_LD_VX_K;
+                case 0x15: return OP_LD_DT_VX;
+                case 0x18: return OP_LD_ST_VX;
+                case 0x1E: return OP_ADD_I_VX;
+                case 0x29: return OP_LD_F_VX;
+                case 0x33: return OP_LD_B_VX;
+                case 0x55: return OP_LD_I_VX;
+                case 0x65: return OP_LD_VX_I;
+                default:   return OP_UNKNOWN;
+            }
+        }
+    }
+
+    return OP_UNKNOWN;
 }
