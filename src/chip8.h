@@ -14,7 +14,6 @@ typedef uint16_t word;
 
 typedef enum 
 {
-    OP_SYS,
     OP_CLS,
     OP_RET,
     OP_JP,
@@ -87,5 +86,9 @@ word chip8_fetch();
 Instruction chip8_instruction(word opcode);
 
 Chip8Opcode chip8_decode(word opcode);
+
+void chip8_execute(Instruction* instruction);
+
+void chip8_run();
 
 #endif /* CHIP8_H */

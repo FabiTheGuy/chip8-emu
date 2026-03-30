@@ -17,6 +17,8 @@ void chip8_init()
     chip8.reg_delay = 0;
     chip8.reg_pc = CHIP8_PC_START;
     chip8.reg_sp = 0;
+
+    // TODO: load sprite data
 }
 
 int chip8_load_rom(byte* rom, size_t rom_size)
@@ -143,4 +145,128 @@ Chip8Opcode chip8_decode(word opcode) {
     }
 
     return OP_UNKNOWN;
+}
+
+void chip8_execute(Instruction* instruction)
+{
+    // TODO: Add validate instruction (checks if x, y < CHIP8_REG_V_SIZE, ....)
+
+
+    switch (instruction->opcode)
+    {
+        case OP_CLS: 
+        {
+            // TODO: need "V-RAM"
+            break;
+        };
+        case OP_RET: 
+        {
+            if (chip8.reg_sp == 0)
+            {
+                // TODO: Error in future
+            }
+
+            chip8.reg_pc = chip8.reg_stack[chip8.reg_sp--];
+
+            break;
+        };
+        case OP_JP: 
+        {
+            chip8.reg_pc = instruction->nnn;
+
+            break;
+        };
+        case OP_CALL: 
+        {
+            if (chip8.reg_sp == CHIP8_STACK_SIZE - 1)
+            {
+                // TODO: Error in future
+            }
+
+            chip8.reg_stack[chip8.reg_sp++] = chip8.reg_pc;
+            chip8.reg_pc = instruction->nnn;
+
+            break;
+        };
+        case OP_SE_VX_BYTE: 
+        {
+            if (chip8.reg_v[instruction->x] == instruction->kk)
+            {
+                chip8.reg_pc += 2;
+            }
+
+            break;
+        };
+        case OP_SNE_VX_BYTE: 
+        {
+            if (chip8.reg_v[instruction->x] != instruction->kk)
+            {
+                chip8.reg_pc += 2;
+            }
+
+            break;
+        };
+        case OP_SE_VX_VY: 
+        {
+            if (chip8.reg_v[instruction->x] == chip8.reg_v[instruction->y])
+            {
+                chip8.reg_pc += 2;
+            }
+
+            break;
+        };
+        case OP_LD_VX_BYTE: 
+        {
+            chip8.reg_v[instruction->x] = instruction->kk;
+
+            break;
+        };
+        case OP_ADD_VX_BYTE: 
+        {
+            word result = chip8.reg_v[instruction->x] + instruction->kk;
+
+            chip8.reg_v[instruction->x] = (byte) result;
+
+            break;
+        };
+        case OP_LD_VX_VY: 
+        {
+            chip8.reg_v[instruction->x] = chip8.reg_v[instruction->y];
+
+            break;
+        };
+        case OP_OR: {};
+        case OP_AND: {};
+        case OP_XOR: {};
+        case OP_ADD: {};
+        case OP_SUB: {};
+        case OP_SHR: {};
+        case OP_SUBN: {};
+        case OP_SHL: {};
+        case OP_SNE_VX_VY: {};
+        case OP_LD_I: {};
+        case OP_JP_V0: {};
+        case OP_RND: {};
+        case OP_DRW: {};
+        case OP_SKP: {};
+        case OP_SKNP: {};
+        case OP_LD_VX_DT: {};
+        case OP_LD_VX_K: {};
+        case OP_LD_DT_VX: {};
+        case OP_LD_ST_VX: {};
+        case OP_ADD_I_VX: {};
+        case OP_LD_F_VX: {};
+        case OP_LD_B_VX: {};
+        case OP_LD_I_VX: {};
+        case OP_LD_VX_I: {};
+        case OP_UNKNOWN: {};
+    }
+}
+
+void chip8_run()
+{
+    word opcode = chip8_fetch();
+    Instruction instr = chip8_instruction(opcode);
+
+    chip8_execute(&instr);
 }
