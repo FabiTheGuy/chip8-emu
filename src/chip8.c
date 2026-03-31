@@ -12,6 +12,8 @@ void chip8_init()
     memset(chip8.mem, 0, sizeof(byte) * CHIP8_MEM_SIZE);
     memset(chip8.reg_v, 0, sizeof(byte) * CHIP8_REG_V_SIZE);
     memset(chip8.reg_stack, 0, sizeof(word) * CHIP8_STACK_SIZE);
+    memset(chip8.display, 0, sizeof(byte) * (CHIP8_DISPLAY_HEIGHT * CHIP8_DISPLAY_WIDTH));
+    memset(chip8.keypad, 0, sizeof(byte) * CHIP8_KEYPAD_SIZE);
 
     chip8.reg_i = 0;
     chip8.reg_sound = 0;

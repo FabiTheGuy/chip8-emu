@@ -8,6 +8,9 @@
 #define CHIP8_REG_V_SIZE 16
 #define CHIP8_STACK_SIZE 16
 #define CHIP8_PC_START 512
+#define CHIP8_DISPLAY_WIDTH 64
+#define CHIP8_DISPLAY_HEIGHT 32
+#define CHIP8_KEYPAD_SIZE 16
 
 typedef uint8_t byte;
 typedef uint16_t word;
@@ -72,6 +75,8 @@ typedef struct
     word reg_pc;
     word reg_stack[CHIP8_STACK_SIZE];
     byte reg_sp;
+    byte display[CHIP8_DISPLAY_HEIGHT][CHIP8_DISPLAY_WIDTH];
+    byte keypad[CHIP8_KEYPAD_SIZE];
 } Chip8;
 
 extern Chip8 chip8;
