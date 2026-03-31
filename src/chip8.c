@@ -26,7 +26,7 @@ void chip8_init()
 
 int chip8_load_rom(byte* rom, size_t rom_size)
 {
-    if (CHIP8_MEM_SIZE - (CHIP8_PC_START - 1) < rom_size)
+    if (rom_size > CHIP8_MEM_SIZE - CHIP8_PC_START)
     {
         return 1; 
     } 
@@ -38,6 +38,12 @@ int chip8_load_rom(byte* rom, size_t rom_size)
 
 word chip8_fetch() 
 {
+    if (chip8.reg_pc >= CHIP8_MEM_SIZE - 1)
+    {
+        // TODO: Future error, unable to fetch memory
+        return 0x0000;
+    }
+
     word op1 = chip8.mem[chip8.reg_pc++] << 8;
     word op2 = chip8.mem[chip8.reg_pc++];
 
@@ -50,8 +56,8 @@ Instruction chip8_instruction(word opcode)
 
     return (Instruction) {
         .opcode = op,
-        .x = 8 >> (opcode & 0x0F00),
-        .y = 4 >> (opcode & 0x00F0),
+        .x = (opcode & 0x0F00) >> 8,
+        .y = (opcode & 0x00F0) >> 4,
         .n = opcode & 0x000F,
         .kk = opcode & 0x00FF,
         .nnn = opcode & 0x0FFF,
@@ -66,6 +72,7 @@ Chip8Opcode chip8_decode(word opcode) {
             {
                 case 0x00E0: return OP_CLS;
                 case 0x00EE: return OP_RET;
+                default: return OP_UNKNOWN;
             }
         }
 
@@ -99,7 +106,7 @@ Chip8Opcode chip8_decode(word opcode) {
                 case 0x6: return OP_SHR;
                 case 0x7: return OP_SUBN;
                 case 0xE: return OP_SHL;
-                default:  return OP_UNKNOWN;
+                default: return OP_UNKNOWN;
             }
         }
 
@@ -123,7 +130,7 @@ Chip8Opcode chip8_decode(word opcode) {
             {
                 case 0x9E: return OP_SKP;
                 case 0xA1: return OP_SKNP;
-                default:   return OP_UNKNOWN;
+                default: return OP_UNKNOWN;
             }
         }
 
@@ -140,7 +147,7 @@ Chip8Opcode chip8_decode(word opcode) {
                 case 0x33: return OP_LD_B_VX;
                 case 0x55: return OP_LD_I_VX;
                 case 0x65: return OP_LD_VX_I;
-                default:   return OP_UNKNOWN;
+                default: return OP_UNKNOWN;
             }
         }
     }
@@ -166,9 +173,10 @@ void chip8_execute(Instruction* instruction)
             if (chip8.reg_sp == 0)
             {
                 // TODO: Error in future
+                break;
             }
 
-            chip8.reg_pc = chip8.reg_stack[chip8.reg_sp--];
+            chip8.reg_pc = chip8.reg_stack[--chip8.reg_sp];
 
             break;
         };
@@ -180,7 +188,7 @@ void chip8_execute(Instruction* instruction)
         };
         case OP_CALL: 
         {
-            if (chip8.reg_sp == CHIP8_STACK_SIZE - 1)
+            if (chip8.reg_sp >= CHIP8_STACK_SIZE)
             {
                 // TODO: Error in future
             }
@@ -257,51 +265,35 @@ void chip8_execute(Instruction* instruction)
         {
             word result = chip8.reg_v[instruction->x] + chip8.reg_v[instruction->y];
 
-            chip8.reg_v[CHIP8_REG_V_SIZE - 1] = 1;
+            chip8.reg_v[CHIP8_REG_V_SIZE - 1] = (result > 0xFF) ? 1 : 0; 
             chip8.reg_v[instruction->x] = (byte) result;
 
             break;
         };
         case OP_SUB: 
         {
-            if (chip8.reg_v[instruction->x] > chip8.reg_v[instruction->y])
-            {
-                chip8.reg_v[CHIP8_REG_V_SIZE - 1] = 1;
-            }
-
+            chip8.reg_v[CHIP8_REG_V_SIZE - 1] = (chip8.reg_v[instruction->x] >= chip8.reg_v[instruction->y]) ? 1 : 0;
             chip8.reg_v[instruction->x] -= chip8.reg_v[instruction->y];
 
             break;
         };
         case OP_SHR: 
         {
-            if (chip8.reg_v[instruction->x] % 2)
-            {
-                chip8.reg_v[CHIP8_REG_V_SIZE - 1] = 1;
-            }
-
+            chip8.reg_v[CHIP8_REG_V_SIZE - 1] = (chip8.reg_v[instruction->x] % 2 != 0) ? 1 : 0;
             chip8.reg_v[instruction->x] /= 2;
 
             break;
         };
         case OP_SUBN: 
         {
-            if (chip8.reg_v[instruction->y] > chip8.reg_v[instruction->x])
-            {
-                chip8.reg_v[CHIP8_REG_V_SIZE - 1] = 1;
-            }
-
+            chip8.reg_v[CHIP8_REG_V_SIZE - 1] = (chip8.reg_v[instruction->y] >= chip8.reg_v[instruction->x]) ? 1 : 0;
             chip8.reg_v[instruction->x] = chip8.reg_v[instruction->y] - chip8.reg_v[instruction->x];
 
             break;
         };
         case OP_SHL: 
         {
-            if (chip8.reg_v[instruction->x] & 0x80) 
-            {
-                chip8.reg_v[CHIP8_REG_V_SIZE - 1] = 1;
-            }
-
+            chip8.reg_v[CHIP8_REG_V_SIZE - 1] = (chip8.reg_v[instruction->x] & 0x80) ? 1 : 0;
             chip8.reg_v[instruction->x] *= 2;
 
             break;
@@ -347,9 +339,15 @@ void chip8_execute(Instruction* instruction)
             byte pos_y = chip8.reg_v[instruction->y];
             byte height = instruction->n;
             byte* collision = &chip8.reg_v[CHIP8_REG_V_SIZE - 1];
+            *collision = 0;
 
             for (byte row = 0; row < height; row++)
             {
+                if (chip8.reg_i + row >= CHIP8_MEM_SIZE)
+                {
+                    break;
+                }
+
                 byte sprite_byte = chip8.mem[chip8.reg_i + row];
 
                 for (byte column = 0; column < 8; column++)
@@ -359,7 +357,7 @@ void chip8_execute(Instruction* instruction)
                         byte curr_pos_x = (pos_x + column) % CHIP8_DISPLAY_WIDTH;
                         byte curr_pos_y = (pos_y + row) % CHIP8_DISPLAY_HEIGHT;
 
-                        if (chip8.display[curr_pos_x][curr_pos_y] == 1)
+                        if (chip8.display[curr_pos_y][curr_pos_x] == 1)
                         {
                             *collision = 1; 
                         }
@@ -384,7 +382,6 @@ void chip8_execute(Instruction* instruction)
             if (chip8.keypad[key])
             {
                 chip8.reg_pc += 2;
-                chip8.keypad[key] = 0;
             }
 
             break;
@@ -414,15 +411,19 @@ void chip8_execute(Instruction* instruction)
         };
         case OP_LD_VX_K: 
         {
-            byte key = chip8.reg_v[instruction->x];
+            byte pressed = 0;
 
-            if (key >= CHIP8_KEYPAD_SIZE)
+            for (byte key = 0; key < CHIP8_KEYPAD_SIZE; key++)
             {
-                // TODO: Future error
-                break;
+                if (chip8.keypad[key])
+                {
+                    chip8.reg_v[instruction->x] = key;
+                    pressed = 1;
+                    break;
+                }
             }
 
-            if (!chip8.keypad[key])
+            if (!pressed)
             {
                 chip8.reg_pc -= 2;
             }
@@ -444,6 +445,8 @@ void chip8_execute(Instruction* instruction)
         case OP_ADD_I_VX: 
         {
             chip8.reg_i += chip8.reg_v[instruction->x];
+
+            break;
         };
         case OP_LD_F_VX: 
         {
@@ -468,44 +471,45 @@ void chip8_execute(Instruction* instruction)
             }
 
             byte value = chip8.reg_v[instruction->x];
-            byte hundrets = ((byte) value / 100) * 100;
-            value -= hundrets;
-            byte tens = ((byte) value / 10) * 10;
-            value -= tens;
-            byte ones = value % 9;
 
-            chip8.mem[chip8.reg_i] = hundrets;
-            chip8.mem[chip8.reg_i + 1] = tens;
-            chip8.mem[chip8.reg_i + 2] = ones;
+            chip8.mem[chip8.reg_i] = value / 100;
+            chip8.mem[chip8.reg_i + 1] = (value / 10) % 10;
+            chip8.mem[chip8.reg_i + 2] = (value % 10);
             
             break;
         };
         case OP_LD_I_VX: 
         {
-            if (chip8.reg_i + (CHIP8_REG_V_SIZE - 1) >= CHIP8_MEM_SIZE)
+            byte v_x = instruction->x;
+
+            if (chip8.reg_i + v_x >= CHIP8_MEM_SIZE)
             {
-                // TODO: Error in future
+                // TODO: Future error, out of range
+                break;
             }
 
-            memcpy(chip8.mem + chip8.reg_i, chip8.reg_v, CHIP8_REG_V_SIZE);
+            memcpy(chip8.mem + chip8.reg_i, chip8.reg_v, v_x + 1);
 
             break;
         };
         case OP_LD_VX_I: 
         {
-            if (chip8.reg_i + (CHIP8_REG_V_SIZE - 1) >= CHIP8_MEM_SIZE)
+            byte v_x = instruction->x;
+
+            if (chip8.reg_i + v_x >= CHIP8_MEM_SIZE)
             {
-                // TODO: Error in future
+                // TODO: Future error, out of range
                 break;
             }
 
-            memcpy(chip8.reg_v, chip8.mem + chip8.reg_i, CHIP8_REG_V_SIZE);
+            memcpy(chip8.reg_v, chip8.mem + chip8.reg_i, v_x + 1);
 
             break;
         };
         case OP_UNKNOWN: 
         {
             // TODO: add global Error struct
+            break;
         };
     }
 }
