@@ -15,13 +15,13 @@ void chip8_init()
     memset(chip8.display, 0, sizeof(byte) * (CHIP8_DISPLAY_HEIGHT * CHIP8_DISPLAY_WIDTH));
     memset(chip8.keypad, 0, sizeof(byte) * CHIP8_KEYPAD_SIZE);
 
+    memcpy(chip8.mem, sprites, sizeof(byte) * (CHIP8_SPRITE_COUNT * CHIP8_SPRITE_SIZE));
+
     chip8.reg_i = 0;
     chip8.reg_sound = 0;
     chip8.reg_delay = 0;
     chip8.reg_pc = CHIP8_PC_START;
     chip8.reg_sp = 0;
-
-    // TODO: load sprite data
 }
 
 int chip8_load_rom(byte* rom, size_t rom_size)
@@ -157,7 +157,8 @@ void chip8_execute(Instruction* instruction)
     {
         case OP_CLS: 
         {
-            // TODO: need "V-RAM"
+            memset(chip8.display, 0, sizeof(byte) * (CHIP8_DISPLAY_HEIGHT * CHIP8_DISPLAY_WIDTH));
+
             break;
         };
         case OP_RET: 
@@ -322,8 +323,15 @@ void chip8_execute(Instruction* instruction)
         };
         case OP_JP_V0: 
         {
-            // TODO: might check if new addr is in range
-            chip8.reg_pc = instruction->nnn + chip8.reg_v[0];
+            word new_addr = instruction->nnn + chip8.reg_v[0];
+
+            if (new_addr >= CHIP8_MEM_SIZE)
+            {
+                // TODO: Error in future
+                break;
+            }
+
+            chip8.reg_pc = new_addr;
 
             break;
         };
@@ -335,17 +343,67 @@ void chip8_execute(Instruction* instruction)
         };
         case OP_DRW: 
         {
-            // TODO: need V-RAM
+            byte pos_x = chip8.reg_v[instruction->x];
+            byte pos_y = chip8.reg_v[instruction->y];
+            byte height = instruction->n;
+            byte* collision = &chip8.reg_v[CHIP8_REG_V_SIZE - 1];
+
+            for (byte row = 0; row < height; row++)
+            {
+                byte sprite_byte = chip8.mem[chip8.reg_i + row];
+
+                for (byte column = 0; column < 8; column++)
+                {
+                    if ((sprite_byte & (0x80 >> column)) != 0)
+                    {
+                        byte curr_pos_x = (pos_x + column) % CHIP8_DISPLAY_WIDTH;
+                        byte curr_pos_y = (pos_y + row) % CHIP8_DISPLAY_HEIGHT;
+
+                        if (chip8.display[curr_pos_x][curr_pos_y] == 1)
+                        {
+                            *collision = 1; 
+                        }
+
+                        chip8.display[curr_pos_x][curr_pos_y] ^= 1;
+                    }
+                }
+            }
+
             break;
         };
         case OP_SKP: 
         {
-            // TODO: need keypad
+            byte key = chip8.reg_v[instruction->x];
+
+            if (key >= CHIP8_KEYPAD_SIZE)
+            {
+                // TODO: Future error
+                break;
+            }
+
+            if (chip8.keypad[key])
+            {
+                chip8.reg_pc += 2;
+                chip8.keypad[key] = 0;
+            }
+
             break;
         };
         case OP_SKNP: 
         {
-            // TODO: need keypad
+            byte key = chip8.reg_v[instruction->x];
+
+            if (key >= CHIP8_KEYPAD_SIZE)
+            {
+                // TODO: Future error
+                break;
+            }
+
+            if (!chip8.keypad[key])
+            {
+                chip8.reg_pc += 2;
+            }
+
             break;
         };
         case OP_LD_VX_DT: 
@@ -356,7 +414,19 @@ void chip8_execute(Instruction* instruction)
         };
         case OP_LD_VX_K: 
         {
-            // TODO: need keypad
+            byte key = chip8.reg_v[instruction->x];
+
+            if (key >= CHIP8_KEYPAD_SIZE)
+            {
+                // TODO: Future error
+                break;
+            }
+
+            if (!chip8.keypad[key])
+            {
+                chip8.reg_pc -= 2;
+            }
+
             break;
         };
         case OP_LD_DT_VX: 
@@ -377,19 +447,61 @@ void chip8_execute(Instruction* instruction)
         };
         case OP_LD_F_VX: 
         {
-            // TODO: need sprites
+            byte sprite_value = chip8.reg_v[instruction->x];
+
+            if (sprite_value >= CHIP8_SPRITE_COUNT)
+            {
+                // TODO: Future error, value in vx is larger than sprite
+                break;
+            }
+
+            chip8.reg_i = (sprite_value * (CHIP8_SPRITE_SIZE));
+
+            break;
         };
         case OP_LD_B_VX: 
         {
+            if (chip8.reg_i + 2 >= CHIP8_MEM_SIZE)
+            {
+                // TODO: Error in future
+                break;
+            }
+
+            byte value = chip8.reg_v[instruction->x];
+            byte hundrets = ((byte) value / 100) * 100;
+            value -= hundrets;
+            byte tens = ((byte) value / 10) * 10;
+            value -= tens;
+            byte ones = value % 9;
+
+            chip8.mem[chip8.reg_i] = hundrets;
+            chip8.mem[chip8.reg_i + 1] = tens;
+            chip8.mem[chip8.reg_i + 2] = ones;
             
+            break;
         };
         case OP_LD_I_VX: 
         {
-            // TODO: check if I is in range when trying to copy
+            if (chip8.reg_i + (CHIP8_REG_V_SIZE - 1) >= CHIP8_MEM_SIZE)
+            {
+                // TODO: Error in future
+            }
+
+            memcpy(chip8.mem + chip8.reg_i, chip8.reg_v, CHIP8_REG_V_SIZE);
+
+            break;
         };
         case OP_LD_VX_I: 
         {
-            // TODO: check if I is in range when trying to read
+            if (chip8.reg_i + (CHIP8_REG_V_SIZE - 1) >= CHIP8_MEM_SIZE)
+            {
+                // TODO: Error in future
+                break;
+            }
+
+            memcpy(chip8.reg_v, chip8.mem + chip8.reg_i, CHIP8_REG_V_SIZE);
+
+            break;
         };
         case OP_UNKNOWN: 
         {
