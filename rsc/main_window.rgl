@@ -1,0 +1,18 @@
+#
+# rgl layout text file (v4.0) - raygui layout file generated using rGuiLayout
+#
+# Number of controls:     7
+#
+# Ref. window:    r <x> <y> <width> <height>
+# Anchor info:    a <id> <name> <posx> <posy> <enabled>
+# Control info:   c <id> <type> <name> <rectangle> <anchor_id> <text>
+#
+r 0 40 -1 -1
+a 001 anchor01 216 96 1
+c 000 0 MainWindow 0 0 672 624 1 Chip-8 Emulator (rom-path)
+c 001 3 EmulatorScreen 24 72 624 264 1 
+c 002 20 MemoryScrollPanel 0 384 336 240 1 
+c 003 20 RegisterScrollPanel 336 384 336 240 1 
+c 004 4 MemoryLabel 0 360 336 24 1 Memory
+c 005 4 RegisterLabel 336 360 336 24 1 Register
+c 006 9 ToggleGroup006 272 40 40 16 1 Load;Start;Stop
