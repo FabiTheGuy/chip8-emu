@@ -6,6 +6,8 @@ sources = [
   'src/main.c',
   'src/chip8.h',
   'src/chip8.c',
+  'src/utils.h',
+  'src/utils.c',
 ]
 
 

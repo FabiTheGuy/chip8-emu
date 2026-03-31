@@ -1,4 +1,5 @@
 #include "chip8.h"
+#include "utils.h"
 
 #include <string.h>
 
@@ -23,9 +24,8 @@ void chip8_init()
 
 int chip8_load_rom(byte* rom, size_t rom_size)
 {
-    if (CHIP8_MEM_SIZE - CHIP8_PC_START < rom_size)
+    if (CHIP8_MEM_SIZE - (CHIP8_PC_START - 1) < rom_size)
     {
-        // TODO: might improve calcs
         return 1; 
     } 
 
@@ -327,7 +327,8 @@ void chip8_execute(Instruction* instruction)
         };
         case OP_RND: 
         {
-            // TODO:
+            chip8.reg_v[instruction->x] = utils_random_byte() & instruction->kk;
+
             break;
         };
         case OP_DRW: 
@@ -395,7 +396,7 @@ void chip8_execute(Instruction* instruction)
     }
 }
 
-void chip8_run()
+void chip8_run_cycle()
 {
     word opcode = chip8_fetch();
     Instruction instr = chip8_instruction(opcode);

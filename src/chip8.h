@@ -89,6 +89,6 @@ Chip8Opcode chip8_decode(word opcode);
 
 void chip8_execute(Instruction* instruction);
 
-void chip8_run();
+void chip8_run_cycle();
 
 #endif /* CHIP8_H */
